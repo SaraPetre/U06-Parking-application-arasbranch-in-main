@@ -1,1 +1,10 @@
 Pillow
+pandas
+pyfiglet
+tabulate
+pytest
+requests
+pylint
+autopep8
+pytest-cov
+flake8
