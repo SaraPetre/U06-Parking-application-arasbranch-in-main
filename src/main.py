@@ -289,22 +289,100 @@ def car_status():
     status_pop_up.protocol("WM_DELETE_WINDOW", on_close)
 
 def stop_parking():
-        # global status_pop_up
-    status_pop_up = Toplevel(rootA)
+      # Create new window called start_pop_up for start parking-button
+    start_pop_up = Toplevel(rootA)
+    start_pop_up.iconbitmap('phouse.ico')
+    start_pop_up.title("Start parking")
+    start_pop_up.geometry("400x200")
+    start_pop_up.resizable(width=False, height=False)
+    start_pop_up.config(bg="#F5F5F5")
 
-    # Remove Windows Manager bar
-    # status_pop_up.overrideredirect(True)
+    # Disable root menu buttons while inside start_pop_up
+    def disable_main_buttons():
+        start_parking_button.config(state='disabled')
+        stop_parking_button.config(state='disabled')
+        status_parking_button.config(state='disabled')
+    disable_main_buttons()
 
-    status_pop_up.iconbitmap('phouse.ico')
-    status_pop_up.title("Status for parked car")
-    status_pop_up.geometry("400x350")
-    status_pop_up.resizable(width=False, height=False)
-    status_pop_up.config(bg="#F5F5F5")
+    # function to activate root menu buttons
+    def activate_root_buttons():
+        start_parking_button.config(state='normal')
+        stop_parking_button.config(state='normal')
+        status_parking_button.config(state='normal')
 
-    start_parking_button.config(state='disabled')
-    stop_parking_button.config(state='disabled')
-    status_parking_button.config(state='disabled')
+    # Label with the text that asks for users reg num.
+    def create_labels():
+        regnum_label = Label(start_pop_up, text="Please enter your registration number", font=("Verdana", 11), fg="black", bg='#F5F5F5')
+        regnum_label.pack(pady=20)
+    create_labels()
 
+    # Entry box for user to type in reg num
+    entry_text = StringVar()
+    entry_regnum = Entry(start_pop_up, width=10, borderwidth=4, font=("Verdana", 9), textvariable=entry_text)
+    entry_regnum.pack()
+
+    # Function that limits reg num entry to 6 upper case characters.
+    def character_limit(entry_text):
+        if len(entry_text.get()) > 0:
+            entry_text.set(entry_text.get().upper()[:6])
+    entry_text.trace("w", lambda *args: character_limit(entry_text))
+
+    # Function for when start button inside start_pop_up is clicked
+    def start_click():
+        global TOTAL_PARKING_SPACES
+        date_time = strftime("%m/%d/%Y, %H:%M:%S")
+
+        # Create a connection to DB
+        connection = sqlite3.connect('park.db')
+
+        # Create cursor
+        cursor = connection.cursor()
+
+        # Enable foreign keys
+        # cur.execute("PRAGMA foreign_keys=1")
+
+        # Check if reg num is valid
+        regnum = entry_text.get()
+        if re.match(r"^[A-Za-z]{3}[0-9]{2}[0-9A-Za-z]{1}$", regnum):
+            # Check if reg num is already in the database, if yes -> showerror.
+            cursor.execute("SELECT car_id FROM car WHERE car_id=?", (regnum,))
+            result = cursor.fetchone()
+            if result:
+                messagebox.showerror(title='Already in use,', message=f'{regnum} is already in use!\nPlease try again with a different registration number.')
+                start_pop_up.destroy()
+                activate_root_buttons()
+            # If reg num is valid and unique insert into car and parked_cars table
+            else:
+                cursor.execute("INSERT INTO car (car_id) VALUES (?)", (regnum,))
+                cursor.execute("INSERT INTO parked_cars (parked_car) VALUES (?)", (regnum,))
+                TOTAL_PARKING_SPACES -= 1
+            # Commit changes
+                connection.commit()
+            # Clear entry box
+                entry_regnum.delete(0, END)
+                park_space_label.config(text='Available spots: ' + str(TOTAL_PARKING_SPACES))
+                messagebox.showinfo(title='Park started', message=f'Parking for {regnum} started at {date_time}')
+        else:
+            messagebox.showerror(title='Not valid', message=f'{regnum} is not a valid registration number\nPlease try again.')
+            entry_regnum.delete(0, END)
+        # Close window and activate root menu buttons
+        start_pop_up.destroy()
+        activate_root_buttons()
+
+    # Create stop button for start_pop_up
+    stop_button = Button(start_pop_up, command=start_click, height=0, width=30, relief="solid", text="Stop parking", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57')
+    stop_button.pack(pady=20)
+
+    # Activate root buttons and close start_pop_up page when clicking 'X' on Windows Manager
+    def on_close():
+        start_parking_button.config(state='normal')
+        stop_parking_button.config(state='normal')
+        status_parking_button.config(state='normal')
+        start_pop_up.destroy()
+
+    start_pop_up.protocol("WM_DELETE_WINDOW", on_close)
+
+# ###################################################################
 # Create picture for header
 # park_image = Image.open("phouse.png")
 # # resize picture to fit for the window
@@ -313,7 +391,7 @@ def stop_parking():
 # # Create label for picture and place it on the grid
 # lab = Label(rootA, image=new_image, borderwidth=0)
 # lab.grid(row=0, column=0, sticky='n')
-
+# #######################################################################
 # Create main menu (root) buttons and their location on the grid
 see_prices_button = Button(rootA, command=prices, height=1, width=70, relief="solid", text="View price list", font=('Verdana', 10), fg='#F5F5F5', bg='#36454F')
 see_prices_button.grid(padx=30, pady=5, row='4', column='0', sticky='w')
