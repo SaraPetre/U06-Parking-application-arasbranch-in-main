@@ -1,24 +1,25 @@
 """Parking application"""
-# from tkinter import *
-from tkinter import Label, Toplevel, StringVar, Entry, END, Button, messagebox, Tk, Canvas
+#from tkinter import *
+#from email.mime import image
+from tkinter import Label, Toplevel, StringVar, Entry, END, Button, messagebox, Tk, Canvas, Image
 import sqlite3
 from time import strftime
 import re
 # from tkinter import Tk, Canvas
 # from tkinter import messagebox
-from PIL import ImageTk, Image
+# from PIL import ImageTk, Image
 
 # Create root window
-root = Tk()
+rootA = Tk()
 # root title
-root.title("Parking application")
+rootA.title("Parking application")
 # root size and not resizable
-root.geometry("620x650")
-root.resizable(width=False, height=False)
+rootA.geometry("620x650")
+rootA.resizable(width=False, height=False)
 # background color for window
-root.configure(bg="#F5F5F5")
+rootA.configure(bg="#F5F5F5")
 # icon for application window
-root.iconbitmap('phouse.ico')
+rootA.iconbitmap('phouse.ico')
 
 # Parking spaces variable
 TOTAL_PARKING_SPACES = 50
@@ -62,7 +63,7 @@ def start_parking():
     When the parking session is started successfully, start_pop_up closes, root button gets activated and parking spaces decreases by 1.
     """
     # Create new window called start_pop_up for start parking-button
-    start_pop_up = Toplevel(root)
+    start_pop_up = Toplevel(rootA)
     start_pop_up.iconbitmap('phouse.ico')
     start_pop_up.title("Start parking")
     start_pop_up.geometry("400x200")
@@ -169,7 +170,7 @@ def car_status():
     If the reg num is valid and not in the db --> messagebox(showerror).
     """
     # global status_pop_up
-    status_pop_up = Toplevel(root)
+    status_pop_up = Toplevel(rootA)
 
     # Remove Windows Manager bar
     # status_pop_up.overrideredirect(True)
@@ -287,41 +288,57 @@ def car_status():
         status_pop_up.destroy()
     status_pop_up.protocol("WM_DELETE_WINDOW", on_close)
 
+def stop_parking():
+        # global status_pop_up
+    status_pop_up = Toplevel(rootA)
+
+    # Remove Windows Manager bar
+    # status_pop_up.overrideredirect(True)
+
+    status_pop_up.iconbitmap('phouse.ico')
+    status_pop_up.title("Status for parked car")
+    status_pop_up.geometry("400x350")
+    status_pop_up.resizable(width=False, height=False)
+    status_pop_up.config(bg="#F5F5F5")
+
+    start_parking_button.config(state='disabled')
+    stop_parking_button.config(state='disabled')
+    status_parking_button.config(state='disabled')
 
 # Create picture for header
-park_image = Image.open("phouse.png")
-# resize picture to fit for the window
-resized = park_image.resize((190, 140), Image.ANTIALIAS)
-new_image = ImageTk.PhotoImage(resized)
-# Create label for picture and place it on the grid
-lab = Label(root, image=new_image, borderwidth=0)
-lab.grid(row=0, column=0, sticky='n')
+# park_image = Image.open("phouse.png")
+# # resize picture to fit for the window
+# resized = park_image.resize((190, 140), Image.ANTIALIAS)
+# new_image = ImageTk.PhotoImage(resized)
+# # Create label for picture and place it on the grid
+# lab = Label(rootA, image=new_image, borderwidth=0)
+# lab.grid(row=0, column=0, sticky='n')
 
 # Create main menu (root) buttons and their location on the grid
-see_prices_button = Button(root, command=prices, height=1, width=70, relief="solid", text="View price list", font=('Verdana', 10), fg='#F5F5F5', bg='#36454F')
+see_prices_button = Button(rootA, command=prices, height=1, width=70, relief="solid", text="View price list", font=('Verdana', 10), fg='#F5F5F5', bg='#36454F')
 see_prices_button.grid(padx=30, pady=5, row='4', column='0', sticky='w')
 
-start_parking_button = Button(root, command=start_parking, height=2, width=20, relief="solid", text="Start parking", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57')
+start_parking_button = Button(rootA, command=start_parking, height=2, width=20, relief="solid", text="Start parking", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57')
 start_parking_button.grid(padx=30, pady=15, row='5', column='0', sticky='w')
 
-status_parking_button = Button(root, command=car_status, height=2, width=22, relief="solid", text="See status for parked car", font=('Verdana', 10), fg='#F5F5F5', bg='#3466a5')
+status_parking_button = Button(rootA, command=car_status, height=2, width=22, relief="solid", text="See status for parked car", font=('Verdana', 10), fg='#F5F5F5', bg='#3466a5')
 status_parking_button.grid(padx=30, pady=15, row='5', column='0', sticky='n')
 
-stop_parking_button = Button(root, height=2, width=20, relief="solid", text="Stop parking", font=('Verdana', 10), fg='#F5F5F5', bg='#8f1d21')
+stop_parking_button = Button(rootA, command=stop_parking, height=2, width=20, relief="solid", text="Stop parking", font=('Verdana', 10), fg='#F5F5F5', bg='#8f1d21')
 stop_parking_button.grid(padx=30, pady=15, row='5', column='0', sticky='e')
 
 # Create black line below logo
-c = Canvas(root, height=22, width=620, bg="black")
+c = Canvas(rootA, height=22, width=620, bg="black")
 c.grid(row=1, column=0)
 
 # Create labels
-welcome_label = Label(root, text="Welcome to YourPark!\n\nPlease choose from the options below..", font=('Verdana', 10), bg='#F5F5F5', fg="black")
+welcome_label = Label(rootA, text="Welcome to YourPark!\n\nPlease choose from the options below..", font=('Verdana', 10), bg='#F5F5F5', fg="black")
 welcome_label.grid(row=3, column=0, sticky='n', padx=10, pady=10)
-time_label = Label(root)
+time_label = Label(rootA)
 time_label.grid(row=1, column=0, sticky='w')
-date_label = Label(root)
+date_label = Label(rootA)
 date_label.grid(row=1, column=0, sticky='e', padx=13)
-park_space_label = Label(root, text='Available spots: ' + str(TOTAL_PARKING_SPACES), font=('Verdana', 10), fg="#FFBF00", bg='black')
+park_space_label = Label(rootA, text='Available spots: ' + str(TOTAL_PARKING_SPACES), font=('Verdana', 10), fg="#FFBF00", bg='black')
 park_space_label.grid(row=1, column=0, sticky='')
 
 # Call time and date function for root menu
@@ -380,4 +397,4 @@ conn.commit()
 conn.close()
 
 # Run tkinter window
-root.mainloop()
+rootA.mainloop()
