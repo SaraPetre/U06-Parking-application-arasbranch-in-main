@@ -333,7 +333,7 @@ def stop_parking():
         stop_button.config(state='disabled')
 
         global TOTAL_PARKING_SPACES
-        date_time = strftime("%m/%d/%Y, %H:%M:%S")
+        #date_time = strftime("%m/%d/%Y, %H:%M:%S")
 
         # Create a connection to DB
         connection = sqlite3.connect('park.db')
@@ -352,79 +352,117 @@ def stop_parking():
             # Check if reg num is in the database, if no -> showerror.
             cursor.execute("SELECT car_id FROM car WHERE car_id=?", (regnum,))
             result = cursor.fetchone()
+            print(result)
+            print(type(result))
             if result:
                 cursor.execute("UPDATE parked_cars SET stop_time=(DATETIME('now','localtime')) where parked_car=?", (regnum,))
-                cursor.execute("SELECT start_time, stop_time FROM parked_cars WHERE parked_car=?", (regnum,))
-                start_stop = cursor.fetchone()
-                print(start_stop)
-            # If reg num not is valid and not in database
+                cursor.execute("SELECT CAST ((julianday(stop_time) - julianday(start_time))* 24* 60 AS INTEGER) FROM parked_cars WHERE parked_car = ?", (regnum,))
+                # # cursor.execute("SELECT start_time, stop_time FROM parked_cars WHERE parked_car=?", (regnum,))
+                # start_stop = cursor.fetchone()
+                # print(start_stop)
+                parked_time = cursor.fetchone()
+                print(type(parked_time))
+                delimeter= ','
+                parked_time_join=delimeter.join([str(value) for value in parked_time])
+                print(parked_time_join)
+                update_query="UPDATE parked_cars SET total_time=? where parked_car=?"
+                data=(parked_time_join, regnum)
+                cursor.execute(update_query, data)
+
+                cursor.execute("SELECT CAST(((total_time)-60) * (0.25) AS INTEGER)from parked_cars WHERE parked_car=?", (regnum,))
+                result_total_time=cursor.fetchone()
+                print(result_total_time)
+                delimeter= ','
+                result_total_time_join=delimeter.join([str(value) for value in result_total_time])
+                print(result_total_time_join)
+                update_query="UPDATE parked_cars SET price=? where parked_car=?"
+                data=(result_total_time_join, regnum)
+                cursor.execute(update_query, data)
+            # If reg num is valid but not in database
             else:
                 messagebox.showerror(title='Not registered,', message=f'{regnum} has not started parking!\nPlease try again with a different registration number.')
                 stop_pop_up.destroy()
                 activate_root_buttons()   
-            # Get total parked time for a parked_car and store it in variable parked_time
-            cursor.execute("SELECT CAST ((JulianDay('now','localtime') - JulianDay(start_time)) * 24 * 60 AS Integer) FROM parked_cars WHERE parked_car=?", (regnum,))
-            parked_time = cursor.fetchone()
-            update_total_time="UPDATE parked_cars SET total_time=? where parked_car=?"
-            data= (parked_time, regnum)
-            cursor.execute(update_total_time, data)
-            #print(parked_time)
-            # Select the right car by its regnum to check its status
-            cursor.execute("SELECT * FROM parked_cars WHERE parked_car=?", (regnum,))
-            car_info = cursor.fetchone()
-            #print(car_info)
-            # If regnum is in db
-            if car_info:
-                # Variables to store reg num, start/stop time and price
-                car_reg = "Registration number: " + str(car_info[0])
-                start_time = "Start date and time:" + str(car_info[1])
-                stop_time = "Stop date and time: " + str(car_info[2])
-                # Show total parking time, if time < 60min show in minutes, if time > 60min show in hours
-                if parked_time[0] <= 59:
-                    total_time = "Total parking time: " + str(parked_time[0]) + ' minutes'
-                elif parked_time[0] >= 60:
-                    total_time = "Total parking time: " + str(round(parked_time[0] / 60, 1)) + ' hours'
+         
+            # Select the right car by its regnum to check its parking summary
+            def parking_summary():
+                cursor.execute("SELECT * FROM parked_cars WHERE parked_car=?", (regnum,))
+                car_info = cursor.fetchone()
+                #print(car_info)
+                # If regnum is in db
+                if car_info:
+                    # Variables to store reg num, start/stop time and price
+                    car_reg = "Registration number: " + str(car_info[0])
+                    start_time = "Start date and time:" + str(car_info[1])
+                    stop_time = "Stop date and time: " + str(car_info[2])
+                    # Show total parking time, if time < 60min show in minutes, if time > 60min show in hours
+                    if parked_time[0] <= 59:
+                        total_time = "Total parking time: " + str(parked_time[0]) + ' minutes'
+                        ######cursor.execute("UPDATE parked_cars SET total_time=?", (total_time,))
+                    elif parked_time[0] >= 60:
+                        total_time = "Total parking time: " + str(round(parked_time[0] / 60, 1)) + ' hours'
 
-                # Variable for pricing for a parked car (0-60min FREE)
-                if parked_time[0] <= 60:
-                    price = "Price: " + str(parked_time[0] * 0) + ' SEK'
-                # Price for 61 min onwards ---> 0.25kr/min, REMOVES FIRST FREE HOUR)
-                elif parked_time[0] >= 61:
-                    price = "Price: " + str((parked_time[0] - 60) * (0.25)) + ' SEK'
+                    # Variable for pricing for a parked car (0-60min FREE)
+                    if parked_time[0] <= 60:
+                        price = "Price: " + str(parked_time[0] * 0) + ' SEK'
+                    # Price for 61 min onwards ---> 0.25kr/min, REMOVES FIRST FREE HOUR)
+                    elif parked_time[0] >= 61:
+                        price = "Price: " + str((parked_time[0] - 60) * (0.25)) + ' SEK'
 
-                # Labels for the variables above
-                car_reg_label = Label(stop_pop_up, text=car_reg, bg='#F5F5F5', font=("Verdana", 11))
-                car_reg_label.pack()
-                start_time_label = Label(stop_pop_up, text=start_time, bg='#F5F5F5', font=("Verdana", 11))
-                start_time_label.pack()
-                stop_time_label = Label(stop_pop_up, text=stop_time, bg='#F5F5F5', font=("Verdana", 11))
-                stop_time_label.pack()
-                total_time_label = Label(stop_pop_up, text=total_time, bg='#F5F5F5', font=("Verdana", 11))
-                total_time_label.pack()
-                price_label = Label(stop_pop_up, text=price, bg='#F5F5F5', font=("Verdana", 11))
-                price_label.pack()
+                    # Labels for the variables above
+                    car_reg_label = Label(stop_pop_up, text=car_reg, bg='#F5F5F5', font=("Verdana", 11))
+                    car_reg_label.pack()
+                    start_time_label = Label(stop_pop_up, text=start_time, bg='#F5F5F5', font=("Verdana", 11))
+                    start_time_label.pack()
+                    stop_time_label = Label(stop_pop_up, text=stop_time, bg='#F5F5F5', font=("Verdana", 11))
+                    stop_time_label.pack()
+                    total_time_label = Label(stop_pop_up, text=total_time, bg='#F5F5F5', font=("Verdana", 11))
+                    total_time_label.pack()
+                    price_label = Label(stop_pop_up, text=price, bg='#F5F5F5', font=("Verdana", 11))
+                    price_label.pack()
 
-                # Clear entry box after click on 'check status'
-                entry_regnum_stop.delete(0, END)
-            # If regnum is valid but not in db, show error message.
-            elif not car_info:
-                messagebox.showerror(title='Car not found', message=f'Car with registration number: {regnum} not found')
-                stop_pop_up.destroy()
-                activate_root_buttons()
+                    # Clear entry box after click on 'stop parking'
+                    entry_regnum_stop.delete(0, END)
+                # If regnum is valid but not in db, show error message.
+                # elif not car_info:
+                #     messagebox.showerror(title='Car not found', message=f'Car with registration number: {regnum} not found')
+                #     stop_pop_up.destroy()
+                #     activate_root_buttons()
+
+            parking_summary()
         # If regnum is not in valid format, show error message.
         else:
             messagebox.showerror(title='Not valid', message=f'{regnum} is not a valid registration number\nPlease try again.')
             entry_regnum_stop.delete(0, END)
             stop_pop_up.destroy()
             activate_root_buttons()
+
+
+       
         # Commit changes
         connection.commit()
+        connection.close()
 
-    # Create stop button for start_pop_up
+    # Create stop button for stop_pop_up
     stop_button = Button(stop_pop_up, command=stop_click, height=0, width=30, relief="solid", text="Stop parking", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57')
     stop_button.pack(pady=20)
 
-    # Activate root buttons and close start_pop_up page when clicking 'X' on Windows Manager
+ # Label with the text that asks for users mailadress.
+    def mail_labels():
+        mail_label = Label(stop_pop_up, text="Please enter your emailadress", font=("Verdana", 11), fg="black", bg='#F5F5F5')
+        mail_label.pack(pady=20)
+        
+
+        # Entry box for user to type in mailaddress
+        entry_mail = StringVar()
+        entry_mail = Entry(stop_pop_up, width=10, borderwidth=4, font=("Verdana", 9), textvariable=entry_text_stop)
+        entry_mail.pack()
+
+    # Clear entry box after click on 'email'
+        entry_mail.delete(0, END)   
+        mail_labels()
+
+    # Activate root buttons and close stop_pop_up page when clicking 'X' on Windows Manager
     def on_close():
         start_parking_button.config(state='normal')
         stop_parking_button.config(state='normal')
@@ -432,6 +470,7 @@ def stop_parking():
         stop_pop_up.destroy()
 
     stop_pop_up.protocol("WM_DELETE_WINDOW", on_close)
+
 
 # ###################################################################
 # Create picture for header
@@ -515,6 +554,19 @@ def create_tables():
         FOREIGN KEY (parked_car) REFERENCES car (car_id)
             )""")
 
+# Defination to delete row after stop of parking
+# def delete_task():
+#     """
+#     Delete a task by task id
+#     :param conn:  Connection to the SQLite database
+#     :param id: id of the task
+#     :return:
+#     """
+#     sql = 'DELETE FROM parked_cars WHERE parked_car=?'
+#     cur = conn.cursor()
+#     cur.execute(sql, (regnum,))
+#     conn.commit()
+#     delete_task()
 
 # Call the create tables function
 # create_tables()
