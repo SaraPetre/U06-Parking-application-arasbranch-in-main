@@ -1,13 +1,14 @@
 """Parking application"""
 #from tkinter import *
 #from email.mime import image
-from tkinter import Label, Toplevel, StringVar, Entry, END, Button, messagebox, Tk, Canvas, Image
+from tkinter import BOTTOM, Label, Toplevel, StringVar, Entry, END, Button, messagebox, Tk, Canvas, Image
 import sqlite3
 from time import strftime
 import re
 from tkinter import Tk, Canvas
 from tkinter import messagebox
 from PIL import ImageTk, Image
+from colorama import Cursor
 
 # Create root window
 rootA = Tk()
@@ -297,7 +298,8 @@ def stop_parking():
     stop_pop_up.resizable(width=False, height=False)
     stop_pop_up.config(bg="#F5F5F5")
 
-    # Disable root menu buttons while inside start_pop_up
+
+    # Disable root menu buttons while inside stop_pop_up
     def disable_main_buttons():
         start_parking_button.config(state='disabled')
         stop_parking_button.config(state='disabled')
@@ -447,29 +449,66 @@ def stop_parking():
     stop_button = Button(stop_pop_up, command=stop_click, height=0, width=30, relief="solid", text="Stop parking", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57')
     stop_button.pack(pady=20)
 
- # Label with the text that asks for users mailadress.
-    def mail_labels():
-        mail_label = Label(stop_pop_up, text="Please enter your emailadress", font=("Verdana", 11), fg="black", bg='#F5F5F5')
-        mail_label.pack(pady=20)
-        
-
-        # Entry box for user to type in mailaddress
-        entry_mail = StringVar()
-        entry_mail = Entry(stop_pop_up, width=10, borderwidth=4, font=("Verdana", 9), textvariable=entry_text_stop)
-        entry_mail.pack()
-
-    # Clear entry box after click on 'email'
-        entry_mail.delete(0, END)   
-        mail_labels()
-
+ 
     # Activate root buttons and close stop_pop_up page when clicking 'X' on Windows Manager
     def on_close():
-        start_parking_button.config(state='normal')
-        stop_parking_button.config(state='normal')
-        status_parking_button.config(state='normal')
+
+        disable_main_buttons()
         stop_pop_up.destroy()
 
+        # Create new window called email_pop_up for stop parking-button
+        
+        email_pop_up = Toplevel(rootA)
+        email_pop_up.iconbitmap('phouse.ico')
+        email_pop_up.title("Receipt")
+        email_pop_up.geometry("400x200")
+        email_pop_up.resizable(width=False, height=False)
+        email_pop_up.config(bg="#F5F5F5")
+
+         # Label with the text that asks for users mailadress.
+        mail_label = Label(email_pop_up, text="Want the reciept sent to mail?\n\nPlease enter your emailaddress", font=("Verdana", 11), fg="black", bg='#F5F5F5')
+        mail_label.pack(pady=20)
+
+        # Entry box for user to type in maailadress
+        entry_mail_text= StringVar()
+        entry_mail = Entry(email_pop_up, width=20, borderwidth=4, font=("Verdana", 9), textvariable=entry_mail_text)
+        entry_mail.pack()
+
+        
+        def on_sent_click():
+                    # Create a connection to DB
+            connection = sqlite3.connect('park.db')
+
+        # Create cursor
+            cursor = connection.cursor()
+
+            # Disable 'send'-button when email address 
+            #email_button.config(state='disabled')
+            email_pattern= '^[a-z 0-9]+[\._]?[a-z 0-9]+[@]\w+[.]\w{2,3}$'
+            email=entry_mail_text.get()
+        #email_input=input('Enter your emailaddress:')
+            if re.search(email_pattern, email):
+                cursor.execute("INSERT INTO driver VALUE (?)", (email,))
+            else:
+                messagebox.showerror(title='Not valid', message=f'{email} is not a valid email address!\nPlease try again.')
+                entry_mail.delete(0, END)
+            # Commit changes
+            connection.commit()
+
+            # Create send button for email_pop_up
+            email_button = Button(email_pop_up, command=on_sent_click, height=0, width=15, relief="solid", text="Send", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57').place(x=50, y=150)
+            email_button.pack(pady=20)
+            #email_button2.pack(pady=20)
+
+        
+
+
+        
+
     stop_pop_up.protocol("WM_DELETE_WINDOW", on_close)
+
+        
+
 
 
 # ###################################################################
