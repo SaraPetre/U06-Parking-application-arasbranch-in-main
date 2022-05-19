@@ -450,7 +450,7 @@ def stop_parking():
     stop_button.pack(pady=20)
 
  
-    # Activate root buttons and close stop_pop_up page when clicking 'X' on Windows Manager
+    # Activate sent email buttons and close stop_pop_up page
     def on_close():
 
         disable_main_buttons()
@@ -474,7 +474,6 @@ def stop_parking():
         entry_mail = Entry(email_pop_up, width=20, borderwidth=4, font=("Verdana", 9), textvariable=entry_mail_text)
         entry_mail.pack()
 
-        
         def on_sent_click():
                     # Create a connection to DB
             connection = sqlite3.connect('park.db')
@@ -486,26 +485,49 @@ def stop_parking():
             #email_button.config(state='disabled')
             email_pattern= '^[a-z 0-9]+[\._]?[a-z 0-9]+[@]\w+[.]\w{2,3}$'
             email=entry_mail_text.get()
+            #regnum = entry_regnum_stop.get()
+            regnum='KZR050'
         #email_input=input('Enter your emailaddress:')
             if re.search(email_pattern, email):
-                cursor.execute("INSERT INTO driver VALUE (?)", (email,))
+                insert_query="INSERT INTO driver (email) VALUES (?)"
+                data_email= (email,)
+                cursor.execute(insert_query,data_email)
+                #cursor.execute("INSERT INTO driver VALUE (?)", (email,))
+                update_query_email_car_set="UPDATE car SET email=? WHERE car_id=?"
+                data2=(email, regnum,)
+                cursor.execute(update_query_email_car_set, data2)
+                entry_mail.delete(0, END)
+                email_pop_up.destroy()
+                activate_root_buttons()
+                from functions import mailhog
+                mailhog()
+
             else:
                 messagebox.showerror(title='Not valid', message=f'{email} is not a valid email address!\nPlease try again.')
                 entry_mail.delete(0, END)
+                #email_pop_up.destroy()
             # Commit changes
             connection.commit()
 
-            # Create send button for email_pop_up
-            email_button = Button(email_pop_up, command=on_sent_click, height=0, width=15, relief="solid", text="Send", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57').place(x=50, y=150)
-            email_button.pack(pady=20)
-            #email_button2.pack(pady=20)
+        # Create send button for email_pop_up
+        email_button = Button(email_pop_up, command=on_sent_click, height=0, width=15, relief="solid", text="Send", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57')
+        email_button.place(x=50, y=150)
+        email_button2 = Button(email_pop_up, command=on_sent_click, height=0, width=15, relief="solid", text="No thanks!!", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57')
+        email_button2.place(x=200, y=150)
 
-        
+            # Activate root buttons and close start_pop_up page when clicking 'X' on Windows Manager
+        def on_close():
+            start_parking_button.config(state='normal')
+            stop_parking_button.config(state='normal')
+            status_parking_button.config(state='normal')
+            email_pop_up.destroy()
 
 
-        
+        email_pop_up.protocol("WM_DELETE_WINDOW", on_close)
+
 
     stop_pop_up.protocol("WM_DELETE_WINDOW", on_close)
+    activate_root_buttons()
 
         
 
