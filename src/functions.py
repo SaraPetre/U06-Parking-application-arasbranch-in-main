@@ -1,4 +1,5 @@
 import sqlite3
+from tkinter import BOTTOM, Label, Toplevel, StringVar, Entry, END, Button, messagebox, Tk, Canvas, Image
 import smtplib
 import requests
 import pandas as pd
@@ -15,7 +16,7 @@ def mailhog():
     # create database object to connect
     # the database db_coins.db
     conn = sqlite3.connect("park.db", isolation_level=None, detect_types=sqlite3.PARSE_COLNAMES)
-    db_df = pd.read_sql_query("SELECT * FROM parked_cars", conn)
+    db_df = pd.read_sql_query("SELECT * FROM parked_cars WHERE parked_car= 'KZR050'", conn)
     # db_df = pd.read_sql_query("SELECT name 'Name', symbol 'Symbol',price_usd 'Price(USD)', change_1h_percent '1h %', change_24h_percent '24h %', change_7d_percent '7 day %',last_updated 'Last update' FROM coins", conn)
     df_create_table = pd.DataFrame(db_df)
 
@@ -28,7 +29,7 @@ def mailhog():
 
  
     from_addr = "reciept@park.yes"
-    to_addr = "test@to.to"
+    to_addr = to_addr_input
     subject = "Reciept summary!"
 
     msg = f"From: {from_addr}\r\nSubject: {subject}\r\nTo: {to_addr}\r\n\r\n This is a message from MailHog.py. \n Find down below the daily prices for the top10 crypto coins! \n\n {url_figlet}\n\n{url}."
@@ -39,3 +40,10 @@ mailhog()
 print("\n\nThe reciept have been sent! \n\nCheck out the MailHog mail!! You can click and follow the down below link to open the mail in your browser.\n")
 print("http://localhost:8025/")
 input("\nPress enter to continue to main menu!")
+
+def regnum_mail():
+    entry_text_stop = StringVar()
+    #entry_regnum_stop = Entry(stop_pop_up, width=10, borderwidth=4, font=("Verdana", 9), textvariable=entry_text_stop)
+    entry_regnum_stop.pack()
+    regnum = entry_text_stop.get()
+    return regnum

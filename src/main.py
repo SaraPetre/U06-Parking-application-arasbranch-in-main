@@ -9,6 +9,11 @@ from tkinter import Tk, Canvas
 from tkinter import messagebox
 from PIL import ImageTk, Image
 from colorama import Cursor
+from pyfiglet import Figlet
+from tabulate import tabulate
+import smtplib
+import pandas as pd
+
 
 # Create root window
 rootA = Tk()
@@ -358,17 +363,18 @@ def stop_parking():
             print(type(result))
             if result:
                 cursor.execute("UPDATE parked_cars SET stop_time=(DATETIME('now','localtime')) where parked_car=?", (regnum,))
-                cursor.execute("SELECT CAST ((julianday(stop_time) - julianday(start_time))* 24* 60 AS INTEGER) FROM parked_cars WHERE parked_car = ?", (regnum,))
+                cursor.execute("SELECT CAST ((julianday(stop_time) - julianday(start_time))* 24 * 60 AS INTEGER) FROM parked_cars WHERE parked_car = ?", (regnum,))
                 # # cursor.execute("SELECT start_time, stop_time FROM parked_cars WHERE parked_car=?", (regnum,))
                 # start_stop = cursor.fetchone()
                 # print(start_stop)
                 parked_time = cursor.fetchone()
+                print(parked_time)
                 print(type(parked_time))
                 delimeter= ','
                 parked_time_join=delimeter.join([str(value) for value in parked_time])
                 print(parked_time_join)
                 update_query="UPDATE parked_cars SET total_time=? where parked_car=?"
-                data=(parked_time_join, regnum)
+                data=(parked_time_join, regnum,)
                 cursor.execute(update_query, data)
 
                 cursor.execute("SELECT CAST(((total_time)-60) * (0.25) AS INTEGER)from parked_cars WHERE parked_car=?", (regnum,))
@@ -377,9 +383,29 @@ def stop_parking():
                 delimeter= ','
                 result_total_time_join=delimeter.join([str(value) for value in result_total_time])
                 print(result_total_time_join)
+                print(type(result_total_time_join))
+                int_result_total_time_join=int(result_total_time_join)
+                print(type(int_result_total_time_join))
+                #############################
+                # if int(result_total_time_join[0]) <= 60:
+                #     cursor.execute("UPDATE parked_cars SET price= 0 where parked_car=?", (regnum,))
+                #     # price = "Price: " + str(result_total_time[0] * 0) + ' SEK'
+                # #     # Price for 61 min onwards ---> 0.25kr/min, REMOVES FIRST FREE HOUR)
+                # # elif result_total_time_join[0] >= 61:
+                # #     price = "Price: " + str((result_total_time_join[0] - 60) * (0.25)) + ' SEK'
+                # ############################
+                # elif int(result_total_time_join[0]) >= 61:
+
+
+                # cursor.execute("SELECT total_time FROM parked_cars where parked_car=?", (regnum,))
+                # result=cursor.fetchone()
+                # print(result)
+
+
                 update_query="UPDATE parked_cars SET price=? where parked_car=?"
-                data=(result_total_time_join, regnum)
+                data=(result_total_time_join, regnum,)
                 cursor.execute(update_query, data)
+                    
             # If reg num is valid but not in database
             else:
                 messagebox.showerror(title='Not registered,', message=f'{regnum} has not started parking!\nPlease try again with a different registration number.')
@@ -474,6 +500,7 @@ def stop_parking():
         entry_mail = Entry(email_pop_up, width=20, borderwidth=4, font=("Verdana", 9), textvariable=entry_mail_text)
         entry_mail.pack()
 
+
         def on_sent_click():
                     # Create a connection to DB
             connection = sqlite3.connect('park.db')
@@ -486,7 +513,7 @@ def stop_parking():
             email_pattern= '^[a-z 0-9]+[\._]?[a-z 0-9]+[@]\w+[.]\w{2,3}$'
             email=entry_mail_text.get()
             #regnum = entry_regnum_stop.get()
-            regnum='KZR050'
+            regnum='AAA222'
         #email_input=input('Enter your emailaddress:')
             if re.search(email_pattern, email):
                 insert_query="INSERT INTO driver (email) VALUES (?)"
@@ -496,18 +523,53 @@ def stop_parking():
                 update_query_email_car_set="UPDATE car SET email=? WHERE car_id=?"
                 data2=(email, regnum,)
                 cursor.execute(update_query_email_car_set, data2)
+                messagebox.showerror(title='Receipt', message=f'Parking reciept of {regnum} have been sent to your email!\n"http://localhost:8025/"')
+                mailhog()
+                delete_all_car_info_after_receipt()
                 entry_mail.delete(0, END)
                 email_pop_up.destroy()
                 activate_root_buttons()
-                from functions import mailhog
-                mailhog()
 
             else:
                 messagebox.showerror(title='Not valid', message=f'{email} is not a valid email address!\nPlease try again.')
                 entry_mail.delete(0, END)
                 #email_pop_up.destroy()
+
+
+    
             # Commit changes
             connection.commit()
+        def mailhog():
+            f_f = Figlet(font='slant')
+            url_figlet = (f_f.renderText("Parking receipt!"))
+            conn = sqlite3.connect("park.db", isolation_level=None, detect_types=sqlite3.PARSE_COLNAMES)
+            db_df = pd.read_sql_query("SELECT * FROM parked_cars WHERE parked_car= 'AAA222'", conn)
+            df_create_table = pd.DataFrame(db_df)
+            email=entry_mail_text.get()
+            to_addr_get=email
+            #to_addr_input=input("Enter your email")
+            #to_addr=to_addr_input
+            def pdtabulate(df_d):
+                return tabulate(df_d, headers='keys', tablefmt='rst', showindex=False)
+            url = pdtabulate(df_create_table)
+
+            from_addr = "reciept@park.yes"
+            to_addr = to_addr_get
+            subject = "Reciept summary!"
+
+            msg = f"From: {from_addr}\r\nSubject: {subject}\r\nTo: {to_addr}\r\n\r\n This is a message from MailHog.py. \n Down below in your parking summary! \n\n {url_figlet}\n\n{url}."
+            server = smtplib.SMTP("localhost:1025")
+            server.sendmail(from_addr, to_addr, msg)
+
+
+            ########################
+        def delete_all_car_info_after_receipt():
+            conn.execute("DELETE from parked_cars where parked_car='AAA222'")
+            conn.execute("DELETE from car where car_id='AAA222'")
+        
+                ############################    
+
+
 
         # Create send button for email_pop_up
         email_button = Button(email_pop_up, command=on_sent_click, height=0, width=15, relief="solid", text="Send", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57')
@@ -528,9 +590,7 @@ def stop_parking():
 
     stop_pop_up.protocol("WM_DELETE_WINDOW", on_close)
     activate_root_buttons()
-
         
-
 
 
 # ###################################################################
