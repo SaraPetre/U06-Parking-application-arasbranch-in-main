@@ -8,7 +8,6 @@ import re
 from tkinter import Tk, Canvas
 from tkinter import messagebox
 from PIL import ImageTk, Image
-from colorama import Cursor
 from pyfiglet import Figlet
 from requests import delete
 from tabulate import tabulate
@@ -362,18 +361,17 @@ def stop_parking():
             # Check if reg num is in the database, if no -> showerror.
             cursor.execute("SELECT car_id FROM car WHERE car_id=?", (regnum,))
             result = cursor.fetchone()
-            print(f"{result} have been selected")
-            #print(type(result))
+
             if result:
                 cursor.execute("UPDATE parked_cars SET stop_time=(DATETIME('now','localtime')) where parked_car=?", (regnum,))
-                print(f"Parking have been stopped for {regnum}!")
+                print(f"\n\nParking have been stopped for {regnum}!")
                 TOTAL_PARKING_SPACES += 1
             # If reg num is valid but not in database
             else:
                 messagebox.showerror(title='Not registered,', message=f'{regnum} has not started parking!\nPlease try again with a different registration number.')
                 stop_pop_up.destroy()
-                activate_root_buttons()   
-         
+                activate_root_buttons()
+
             # Select the right car by its regnum. Overview of parking summary and update db with parking time and price
             def parking_summary():
                 cursor.execute("SELECT CAST ((julianday(stop_time) - julianday(start_time))* 24 * 60 AS INTEGER) FROM parked_cars WHERE parked_car = ?", (regnum,))
@@ -397,7 +395,7 @@ def stop_parking():
                     elif parked_time[0] >= 60:
                         total_time = "Total parking time: " + str(round(parked_time[0] / 60, 1)) + ' hours'
                         total_time_db=str(round(parked_time[0] /60, 1))
-                        print(total_time_db)
+                        print(total_time)
                         total_time_db_query="UPDATE parked_cars SET total_time=? where parked_car=?"
                         data_total_time_db=(total_time_db, regnum,)
                         cursor.execute(total_time_db_query, data_total_time_db)
@@ -405,7 +403,7 @@ def stop_parking():
                     if parked_time[0] <= 60:
                         price = "Price: " + str(parked_time[0] * 0) + ' SEK'
                         price_db_free=str(parked_time[0] * 0)
-                        print(price_db_free)
+                        print(price)
                         price_db_query_free="UPDATE parked_cars SET price=? where parked_car=?"
                         data_price_db=(price_db_free, regnum,)
                         cursor.execute(price_db_query_free, data_price_db)
@@ -413,10 +411,9 @@ def stop_parking():
                     elif parked_time[0] >= 61:
                         price = "Price: " + str((parked_time[0] - 60) * (0.25)) + ' SEK'
                         price_db=str((parked_time[0] - 60) * (0.25))
-                        print(price_db)
+                        print(price)
                         price_db_query="UPDATE parked_cars SET price=? where parked_car=?"
                         data_price_db=(price_db, regnum,)
-                        
                         cursor.execute(price_db_query, data_price_db)
                     # Labels for the variables above
                     car_reg_label = Label(stop_pop_up, text=car_reg, bg='#F5F5F5', font=("Verdana", 11))
@@ -432,109 +429,12 @@ def stop_parking():
 
                     # Clear entry box after click on 'stop parking'
                     entry_regnum_stop.delete(0, END)
-                # If regnum is valid but not in db, show error message.
-                # elif not car_info:
-                #     messagebox.showerror(title='Car not found', message=f'Car with registration number: {regnum} not found')
-                #     stop_pop_up.destroy()
-                #     activate_root_buttons()
-
-            
-
-
-            
-
-            # def on_close_email_pup_up():
-            #     print("test")
-            #     #stop_parking_button.config(state='disabled')
-
-            #     # Create new window called email_pop_up for stop parking-button
-        
-            #     email_pop_up = Toplevel(rootA)
-            #     email_pop_up.iconbitmap('phouse.ico')
-            #     email_pop_up.title("Receipt")
-            #     email_pop_up.geometry("400x200")
-            #     email_pop_up.resizable(width=False, height=False)
-            #     email_pop_up.config(bg="#F5F5F5")
-
-            #      # Label with the text that asks for users mailadress.
-            #     mail_label = Label(email_pop_up, text="Want the reciept sent to mail?\n\nPlease enter your emailaddress", font=("Verdana", 11), fg="black", bg='#F5F5F5')
-            #     mail_label.pack(pady=20)
-
-            #     # Entry box for user to type in maailadress
-            #     entry_mail_text= StringVar()
-            #     entry_mail = Entry(email_pop_up, width=30, borderwidth=4, font=("Verdana", 9), textvariable=entry_mail_text)
-            #     entry_mail.pack()
-
-            #     # Create send button for email_pop_up
-            #     email_button = Button(email_pop_up, command=on_close_email_pup_up, height=0, width=25, relief="solid", text="Send", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57')
-            #     email_button.place(x=95, y=150)
-
-            #     email_pattern= '^[a-z 0-9]+[\._]?[a-z 0-9]+[@]\w+[.]\w{2,3}$'
-            #     email=entry_mail_text.get()
-            #     print(email)
-            #     regnum = entry_regnum_stop.get()
-            #     print(f"{regnum}")
-            #     print("test test")
-            #     if re.search(email_pattern, email):
-            #         insert_query="INSERT INTO driver (email) VALUES (?)"
-            #         data_email= (email,)
-            #         cursor.execute(insert_query,data_email)
-            #         #cursor.execute("INSERT INTO driver VALUE (?)", (email,))
-            #         update_query_email_car_set="UPDATE car SET email=? WHERE car_id=?"
-            #         data2=(email, regnum,)
-            #         cursor.execute(update_query_email_car_set, data2)
-            #         messagebox.showerror(title='Receipt', message=f'Parking reciept of {regnum} have been sent to your email!\n"http://localhost:8025/"')
-            #         #email_pop_up.destroy()
-            #         mailhog()
-            #         connection.execute("DELETE from parked_cars where parked_car='AAA333'")
-            #         connection.execute("DELETE from car where car_id='AAA333'")
-                    
-            #         entry_mail.delete(0, END)
-            #         email_pop_up.destroy()
-            #         activate_root_buttons()
-
-            #     print("Test 3")
             parking_summary()
             # on_close_email_pup_up()
 
-
-
-            
-            # def sent_mail():
-            # # Disable 'stop'-button when info about car is shown
-
-            #     email_pattern= '^[a-z 0-9]+[\._]?[a-z 0-9]+[@]\w+[.]\w{2,3}$'
-            #     email=entry_mail_text.get()
-            #     regnum = entry_regnum_stop.get()
-            #     print(f"{regnum}")
-            #     print("test test")
-
-            #     if re.search(email_pattern, email):
-            #         insert_query="INSERT INTO driver (email) VALUES (?)"
-            #         data_email= (email,)
-            #         cursor.execute(insert_query,data_email)
-            #         #cursor.execute("INSERT INTO driver VALUE (?)", (email,))
-            #         update_query_email_car_set="UPDATE car SET email=? WHERE car_id=?"
-            #         data2=(email, regnum,)
-            #         cursor.execute(update_query_email_car_set, data2)
-            #         messagebox.showerror(title='Receipt', message=f'Parking reciept of {regnum} have been sent to your email!\n"http://localhost:8025/"')
-            #         mailhog()
-            #         connection.execute("DELETE from parked_cars where parked_car='AAA333'")
-            #         connection.execute("DELETE from car where car_id='AAA333'")
-                    
-            #         entry_mail.delete(0, END)
-            #         email_pop_up.destroy()
-            #         activate_root_buttons()
-
-            # sent_mail()
-            #on_close()
-            
             # Commit changes
             connection.commit()
 
-
-                
-            
         # If regnum is not in valid format, show error message.
         else:
             messagebox.showerror(title='Not valid', message=f'{regnum} is not a valid registration number\nPlease try again.')
@@ -542,8 +442,6 @@ def stop_parking():
             stop_pop_up.destroy()
             activate_root_buttons()
 
-
-       
         # Commit changes
         connection.commit()
         connection.close()
@@ -552,9 +450,6 @@ def stop_parking():
     stop_button = Button(stop_pop_up, command=stop_click, height=0, width=30, relief="solid", text="Stop parking", font=('Verdana', 10), fg='#F5F5F5', bg='#2E8B57')
     stop_button.pack(pady=20)
 
-    
-
- ############test att avaktivera nedan#############
     # Activate sent email buttons and close stop_pop_up page
     def on_close():
 
@@ -562,7 +457,6 @@ def stop_parking():
         stop_pop_up.destroy()
 
         # Create new window called email_pop_up for stop parking-button
-        
         email_pop_up = Toplevel(rootA)
         email_pop_up.iconbitmap('phouse.ico')
         email_pop_up.title("Receipt")
@@ -574,10 +468,15 @@ def stop_parking():
         regnum_mail_label = Label(email_pop_up, text="\nPlease enter your regnumber, Please!", font=("Verdana", 11), fg="black", bg='#F5F5F5')
         regnum_mail_label.pack(pady=20)
 
-                # Entry box for user to type in regnumber
+        # Entry box for user to type in regnumber
         regnum_mail_text= StringVar()
         regnum_mail = Entry(email_pop_up, width=20, borderwidth=4, font=("Verdana", 9), textvariable=regnum_mail_text)
         regnum_mail.pack()
+
+        def character_limit(entry_text):
+            if len(entry_text.get()) > 0:
+                entry_text.set(entry_text.get().upper()[:6])
+        regnum_mail_text.trace("w", lambda *args: character_limit(regnum_mail_text))
 
          # Label with the text that asks for users mailadress.
         mail_label = Label(email_pop_up, text="\nPlease enter your emailaddress", font=("Verdana", 11), fg="black", bg='#F5F5F5')
@@ -589,33 +488,22 @@ def stop_parking():
         entry_mail.pack()
 
 
-
         def on_sent_click():
-                    # Create a connection to DB
+            # Create a connection to DB
             connection = sqlite3.connect('park.db')
 
-        # Create cursor
+            # Create cursor
             cursor = connection.cursor()
 
             regnum = regnum_mail_text.get()
-            print(regnum)
+            #print(regnum)
 
-            # Disable 'send'-button when email address 
-            #email_button.config(state='disabled')
-            email_pattern= '^[a-z 0-9]+[\._]?[a-z 0-9]+[@]\w+[.]\w{2,3}$'
+            #  Disable 'send'-button when email address
+            #  email_button.config(state='disabled')
+            email_pattern= (r'^[a-z 0-9]+[\._]?[a-z 0-9]+[@]\w+[.]\w{2,3}$')
             email=entry_mail_text.get()
-        
-            #regnum = entry_regnum_stop.get()
-            #regnum='CCC555'
-            #print(f"{regnum}")
-            # car_id_query="SELECT car_id FROM car WHERE email=?"
-            # data_car_id=(email,)
-            # cursor.execute(car_id_query,data_car_id)
-            # car_id=cursor.fetchone()
-            # print(car_id)
-            # connection.commit()
-
-        #email_input=input('Enter your emailaddress:')
+            print(f"\nYou have added the following email address, {email}, for the receipt!\n")
+            #  regnum = entry_regnum_stop.get()        
             if re.search(email_pattern, email):
                 insert_query="INSERT INTO driver (email) VALUES (?)"
                 data_email= (email,)
@@ -630,7 +518,7 @@ def stop_parking():
                 # cursor.execute(car_id_query,data_car_id)
                 # car_id=cursor.fetchone()
                 # print(car_id)
-                messagebox.showerror(title='Receipt', message=f'Parking reciept of {regnum} have been sent to your email!\n"http://localhost:8025/"')
+                messagebox.showerror(title='Receipt', message=f'Parking receipt of {regnum} have been sent to your email!\n"http://localhost:8025/"')
                 mailhog()
                 delete_query_1="DELETE from parked_cars where parked_car=?"
                 data_delete_1=(regnum,)
@@ -638,23 +526,21 @@ def stop_parking():
                 delete_query_2="DELETE from car where car_id=?"
                 data_delete_2=(regnum,)
                 cursor.execute(delete_query_2, data_delete_2)
-                
-                
                 entry_mail.delete(0, END)
                 email_pop_up.destroy()
                 activate_root_buttons()
-                
+
 
             else:
                 messagebox.showerror(title='Not valid', message=f'{email} is not a valid email address!\nPlease try again.')
                 entry_mail.delete(0, END)
                 #email_pop_up.destroy()
-
-
+                activate_root_buttons()
 
             # Commit changes
             connection.commit()
-            
+
+
         def mailhog():
 
             f_f = Figlet(font='slant')
@@ -662,7 +548,8 @@ def stop_parking():
 
             regnum = regnum_mail_text.get()
             conn = sqlite3.connect("park.db", isolation_level=None, detect_types=sqlite3.PARSE_COLNAMES)
-            query="SELECT * FROM parked_cars WHERE parked_car=?"
+            query="SELECT parked_car 'Parked car', start_time 'Start time', stop_time 'Stop time', total_time 'Total time(hours)', price 'Price(SEK)' FROM parked_cars WHERE parked_car=?"
+            #query="SELECT * FROM parked_cars WHERE parked_car=?"
             db_df=pd.read_sql_query(query, conn, params=[regnum])
             df_create_table = pd.DataFrame(db_df)
             email=entry_mail_text.get()
@@ -671,18 +558,18 @@ def stop_parking():
                 return tabulate(df_d, headers='keys', tablefmt='rst', showindex=False)
             url = pdtabulate(df_create_table)
 
-            from_addr = "reciept@park.yes"
+            from_addr = "receipt@park.yes"
             to_addr = to_addr_get
-            subject = "Reciept summary!"
+            subject = "Receipt summary!"
 
-            msg = f"From: {from_addr}\r\nSubject: {subject}\r\nTo: {to_addr}\r\n\r\n This is a message from MailHog.py. \n Down below in your parking summary! \n\n {url_figlet}\n\n{url}."
+            msg = f"From: {from_addr}\r\nSubject: {subject}\r\nTo: {to_addr}\r\n\r\n This is a message from MailHog.py. \n Down below in your parking summary! \n\n {url_figlet}\n\n{url}.\n\nThank you for parking with YourPark!!"
             server = smtplib.SMTP("localhost:1025")
             server.sendmail(from_addr, to_addr, msg)
 
-            print("\n\nThe reciept have been sent! \n\nCheck out the MailHog mail!! You can click and follow the down below link to open the mail in your browser.\n")
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            print("\nThe receipt have been sent! \n\nCheck out the MailHog mail!! You can click and follow the down below link to open the mail in your browser.\n")
             print("http://localhost:8025/")
-
-
+            print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
 
         # Create send button for email_pop_up
@@ -690,7 +577,7 @@ def stop_parking():
         email_button.place(x=130, y=280)
 
 
-            #Activate root buttons and close start_pop_up page when clicking 'X' on Windows Manager
+        # Activate root buttons and close start_pop_up page when clicking 'X' on Windows Manager
         def on_close():
             start_parking_button.config(state='normal')
             stop_parking_button.config(state='normal')
@@ -703,10 +590,8 @@ def stop_parking():
 
     stop_pop_up.protocol("WM_DELETE_WINDOW", on_close)
     activate_root_buttons()
-        
+     
 
-
-# ###################################################################
 # Create picture for header
 park_image = Image.open("phouse.png")
 # resize picture to fit for the window
@@ -715,7 +600,7 @@ new_image = ImageTk.PhotoImage(resized)
 # Create label for picture and place it on the grid
 lab = Label(rootA, image=new_image, borderwidth=0)
 lab.grid(row=0, column=0, sticky='n')
-# #######################################################################
+
 # Create main menu (root) buttons and their location on the grid
 see_prices_button = Button(rootA, command=prices, height=1, width=70, relief="solid", text="View price list", font=('Verdana', 10), fg='#F5F5F5', bg='#36454F')
 see_prices_button.grid(padx=30, pady=5, row='4', column='0', sticky='w')
