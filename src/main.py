@@ -4,7 +4,7 @@ import sqlite3
 from time import strftime
 import re
 import smtplib
-from PIL import ImageTk
+from PIL import ImageTk, Image
 from pyfiglet import Figlet
 from tabulate import tabulate
 
@@ -359,7 +359,7 @@ def stop_parking():
         cursor = connection.cursor()
 
         # Enable foreign keys
-        # cur.execute("PRAGMA foreign_keys=1")
+        #cur.execute("PRAGMA foreign_keys=1")
 
         # Variable to store inputed reg num
         regnum = entry_text_stop.get()
@@ -437,6 +437,11 @@ def stop_parking():
 
                     # Clear entry box after click on 'stop parking'
                     entry_regnum_stop.delete(0, END)
+                # If regnum is valid but not in db, show error message.
+                elif not car_info:
+                    messagebox.showerror(title='Car not found', message=f'Car with registration number: {regnum} not found')
+                    stop_pop_up.destroy()
+                    activate_root_buttons()
             parking_summary()
             # on_close_email_pup_up()
 
@@ -512,21 +517,23 @@ def stop_parking():
             print(f"\nYou have added the following email address, {email}, for the receipt!\n")
             #  regnum = entry_regnum_stop.get()
             if re.search(email_pattern, email):
+                update_query_email_car_set = "UPDATE car SET email=? WHERE car_id=?"
+                data2 = (email, regnum,)
+                cursor.execute(update_query_email_car_set, data2)
                 insert_query = "INSERT INTO driver (email) VALUES (?)"
                 data_email = (email,)
                 cursor.execute(insert_query, data_email)
 
                 # cursor.execute("INSERT INTO driver VALUE (?)", (email,))
-                update_query_email_car_set = "UPDATE car SET email=? WHERE car_id=?"
-                data2 = (email, regnum,)
-                cursor.execute(update_query_email_car_set, data2)
+                #update_query_email_car_set = "INSERT INTO car (email) VALUES (?) WHERE car_id=?"
+
                 # car_id_query="SELECT car_id FROM car WHERE email=?"
                 # data_car_id=(email,)
                 # cursor.execute(car_id_query,data_car_id)
                 # car_id=cursor.fetchone()
                 # print(car_id)
-                messagebox.showerror(title='Receipt', message=f'Parking receipt of {regnum} have been sent to your email!\n"http://localhost:8025/"')
                 mailhog()
+                messagebox.showerror(title='Receipt', message=f'Parking receipt of {regnum} have been sent to your email!\n"http://localhost:8025/"')
                 delete_query_1 = "DELETE from parked_cars where parked_car=?"
                 data_delete_1 = (regnum,)
                 cursor.execute(delete_query_1, data_delete_1)
@@ -535,6 +542,8 @@ def stop_parking():
                 cursor.execute(delete_query_2, data_delete_2)
                 entry_mail.delete(0, END)
                 email_pop_up.destroy()
+                print("\nCAR INFO HAS BEEN REMOVED FROM DB!\n")
+                messagebox.showerror(title='CAR INFO REMOVED', message=f'All info for {regnum} have been removed from YourPark!\n"http://localhost:8025/"')
                 activate_root_buttons()
 
             else:
