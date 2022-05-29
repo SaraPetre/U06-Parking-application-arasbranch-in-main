@@ -8,9 +8,8 @@ import smtplib
 from PIL import ImageTk, Image
 from pyfiglet import Figlet
 from tabulate import tabulate
-
 import pandas as pd
-
+#Testar att fel fångas
 
 # Create root window
 rootA = Tk()
