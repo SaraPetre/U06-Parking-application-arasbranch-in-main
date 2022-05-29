@@ -1,5 +1,6 @@
 """Parking application"""
 from tkinter import Label, Toplevel, StringVar, Entry, END, Button, messagebox, Tk, Canvas
+# from tkinter import Image
 import sqlite3
 from time import strftime
 import re
@@ -386,7 +387,6 @@ def stop_parking():
                 parked_time = cursor.fetchone()
                 cursor.execute("SELECT * FROM parked_cars WHERE parked_car=?", (regnum,))
                 car_info = cursor.fetchone()
-                # print(car_info)
                 # If regnum is in db
                 if car_info:
                     # Variables to store reg num, start/stop time and price
@@ -424,17 +424,18 @@ def stop_parking():
                         data_price_db = (price_db, regnum,)
                         cursor.execute(price_db_query, data_price_db)
                     # Labels for the variables above
-                    car_reg_label = Label(stop_pop_up, text=car_reg, bg='#F5F5F5', font=("Verdana", 11))
-                    car_reg_label.pack()
-                    start_time_label = Label(stop_pop_up, text=start_time, bg='#F5F5F5', font=("Verdana", 11))
-                    start_time_label.pack()
-                    stop_time_label = Label(stop_pop_up, text=stop_time, bg='#F5F5F5', font=("Verdana", 11))
-                    stop_time_label.pack()
-                    total_time_label = Label(stop_pop_up, text=total_time, bg='#F5F5F5', font=("Verdana", 11))
-                    total_time_label.pack()
-                    price_label = Label(stop_pop_up, text=price, bg='#F5F5F5', font=("Verdana", 11))
-                    price_label.pack()
-
+                    def labels_varibles():
+                        car_reg_label = Label(stop_pop_up, text=car_reg, bg='#F5F5F5', font=("Verdana", 11))
+                        car_reg_label.pack()
+                        start_time_label = Label(stop_pop_up, text=start_time, bg='#F5F5F5', font=("Verdana", 11))
+                        start_time_label.pack()
+                        stop_time_label = Label(stop_pop_up, text=stop_time, bg='#F5F5F5', font=("Verdana", 11))
+                        stop_time_label.pack()
+                        total_time_label = Label(stop_pop_up, text=total_time, bg='#F5F5F5', font=("Verdana", 11))
+                        total_time_label.pack()
+                        price_label = Label(stop_pop_up, text=price, bg='#F5F5F5', font=("Verdana", 11))
+                        price_label.pack()
+                    labels_varibles()
                     # Clear entry box after click on 'stop parking'
                     entry_regnum_stop.delete(0, END)
                 # If regnum is valid but not in db, show error message.
@@ -443,7 +444,6 @@ def stop_parking():
                     stop_pop_up.destroy()
                     activate_root_buttons()
             parking_summary()
-            # on_close_email_pup_up()
 
             # Commit changes
             connection.commit()
@@ -524,14 +524,6 @@ def stop_parking():
                 data_email = (email,)
                 cursor.execute(insert_query, data_email)
 
-                # cursor.execute("INSERT INTO driver VALUE (?)", (email,))
-                # update_query_email_car_set = "INSERT INTO car (email) VALUES (?) WHERE car_id=?"
-
-                # car_id_query="SELECT car_id FROM car WHERE email=?"
-                # data_car_id=(email,)
-                # cursor.execute(car_id_query,data_car_id)
-                # car_id=cursor.fetchone()
-                # print(car_id)
                 mailhog()
                 messagebox.showerror(title='Receipt', message=f'Parking receipt of {regnum} have been sent to your email!\n"http://localhost:8025/"')
                 delete_query_1 = "DELETE from parked_cars where parked_car=?"
@@ -542,8 +534,8 @@ def stop_parking():
                 cursor.execute(delete_query_2, data_delete_2)
                 entry_mail.delete(0, END)
                 email_pop_up.destroy()
-                print("\nCAR INFO HAS BEEN REMOVED FROM DB!\n")
-                messagebox.showerror(title='CAR INFO REMOVED', message=f'All info for {regnum} have been removed from YourPark!\n"http://localhost:8025/"')
+                print(f"\nCAR INFO OF {regnum} HAS BEEN REMOVED FROM DB!\n")
+                messagebox.showerror(title='CAR INFO REMOVED', message=f'All info for {regnum} have been removed from YourPark!\n')
                 activate_root_buttons()
 
             else:
@@ -555,14 +547,14 @@ def stop_parking():
             connection.commit()
 
         def mailhog():
-
-            f_f = Figlet(font='slant')
-            url_figlet = (f_f.renderText("Parking receipt!"))
+            """
+            This funktion sends an email with the parkinbg summery to the user.
+            """
+            url_figlet = (Figlet(font='slant').renderText("Parking receipt!"))
 
             regnum = regnum_mail_text.get()
             connect = sqlite3.connect("park.db", isolation_level=None, detect_types=sqlite3.PARSE_COLNAMES)
             query = "SELECT parked_car 'Parked car', start_time 'Start time', stop_time 'Stop time', total_time 'Total time(hours)', price 'Price(SEK)' FROM parked_cars WHERE parked_car=?"
-            # query="SELECT * FROM parked_cars WHERE parked_car=?"
             db_df = pd.read_sql_query(query, connect, params=[regnum])
             df_create_table = pd.DataFrame(db_df)
             email = entry_mail_text.get()
