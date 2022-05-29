@@ -1,5 +1,5 @@
 """Parking application"""
-from tkinter import Label, Toplevel, StringVar, Entry, END, Button, messagebox, Tk, Canvas, Image
+from tkinter import Label, Toplevel, StringVar, Entry, END, Button, messagebox, Tk, Canvas
 import sqlite3
 from time import strftime
 import re
@@ -359,7 +359,7 @@ def stop_parking():
         cursor = connection.cursor()
 
         # Enable foreign keys
-        #cur.execute("PRAGMA foreign_keys=1")
+        # cur.execute("PRAGMA foreign_keys=1")
 
         # Variable to store inputed reg num
         regnum = entry_text_stop.get()
@@ -525,7 +525,7 @@ def stop_parking():
                 cursor.execute(insert_query, data_email)
 
                 # cursor.execute("INSERT INTO driver VALUE (?)", (email,))
-                #update_query_email_car_set = "INSERT INTO car (email) VALUES (?) WHERE car_id=?"
+                # update_query_email_car_set = "INSERT INTO car (email) VALUES (?) WHERE car_id=?"
 
                 # car_id_query="SELECT car_id FROM car WHERE email=?"
                 # data_car_id=(email,)
