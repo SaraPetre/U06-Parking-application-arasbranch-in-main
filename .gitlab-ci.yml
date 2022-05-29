@@ -20,18 +20,18 @@ stages:
   before_script:
     - *some-script-before
   script:
-    - pycodestyle --ignore=E501 /*.py
+    - pycodestyle --ignore=E501 main.py
 
 "Lint code with pylint":
   stage: code_quality
   before_script:
     - *some-script-before
   script:
-    - pylint --disable=C0301 --disable=W0603 --disable=R0914 --max-statements=200 /*.py # The ovner of this repo have used global statement. I therefore have to add --disable=W0603 to pass pylint
+    - pylint --disable=C0301 --disable=W0603 --disable=R0914 --max-statements=200 main.py # The ovner of this repo have used global statement. I therefore have to add --disable=W0603 to pass pylint
 
 "Run flake8":
   stage: code_quality
   before_script:
     - *some-script-before
   script:
-    - flake8 --ignore=E501 /*.py
+    - flake8 --ignore=E501 main.py
