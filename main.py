@@ -9,7 +9,6 @@ from PIL import ImageTk, Image
 from pyfiglet import Figlet
 from tabulate import tabulate
 import pandas as pd
-#Testar att fel fångas
 
 # Create root window
 rootA = Tk()
@@ -358,9 +357,6 @@ def stop_parking():
         # Create cursor
         cursor = connection.cursor()
 
-        # Enable foreign keys
-        # cur.execute("PRAGMA foreign_keys=1")
-
         # Variable to store inputed reg num
         regnum = entry_text_stop.get()
 
@@ -395,7 +391,7 @@ def stop_parking():
                     # Show total parking time, if time < 60min show in minutes, if time > 60min show in hours
                     if parked_time[0] <= 59:
                         total_time = "Total parking time: " + str(parked_time[0]) + ' minutes'
-                        total_time_less_h = str(parked_time[0] / 0)
+                        total_time_less_h = str(parked_time[0] / 60)
                         total_time_less_h_query = "UPDATE parked_cars SET total_time=? where parked_car=?"
                         data_total_time_less_db = (total_time_less_h, regnum,)
                         cursor.execute(total_time_less_h_query, data_total_time_less_db)
@@ -478,7 +474,7 @@ def stop_parking():
         email_pop_up.config(bg="#F5F5F5")
 
         # Label with the text that asks for users regnum.
-        regnum_mail_label = Label(email_pop_up, text="\nPlease enter your regnumber, Please!", font=("Verdana", 11), fg="black", bg='#F5F5F5')
+        regnum_mail_label = Label(email_pop_up, text="\nReceipt!\nEnter your regnumber, Please!", font=("Verdana", 11), fg="black", bg='#F5F5F5')
         regnum_mail_label.pack(pady=20)
 
         # Entry box for user to type in regnumber
@@ -492,7 +488,7 @@ def stop_parking():
         regnum_mail_text.trace("w", lambda *args: character_limit(regnum_mail_text))
 
         # Label with the text that asks for users mailadress.
-        mail_label = Label(email_pop_up, text="\nPlease enter your emailaddress", font=("Verdana", 11), fg="black", bg='#F5F5F5')
+        mail_label = Label(email_pop_up, text="\nAnd your emailaddress", font=("Verdana", 11), fg="black", bg='#F5F5F5')
         mail_label.pack(pady=20)
 
         # Entry box for user to type in maailadress
@@ -508,14 +504,10 @@ def stop_parking():
             cursor = connection.cursor()
 
             regnum = regnum_mail_text.get()
-            # print(regnum)
 
-            #  Disable 'send'-button when email address
-            #  email_button.config(state='disabled')
             email_pattern = (r'^[a-z 0-9]+[\._]?[a-z 0-9]+[@]\w+[.]\w{2,3}$')
             email = entry_mail_text.get()
             print(f"\nYou have added the following email address, {email}, for the receipt!\n")
-            #  regnum = entry_regnum_stop.get()
             if re.search(email_pattern, email):
                 update_query_email_car_set = "UPDATE car SET email=? WHERE car_id=?"
                 data2 = (email, regnum,)

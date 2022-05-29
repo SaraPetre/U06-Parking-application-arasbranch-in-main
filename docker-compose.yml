@@ -5,10 +5,12 @@ services:
       context: .
       target: img1
 
-  img2:
-    build:
-      context: .
-      target: img2
+    # img2 can be used if the user dont have requirements for running MailHog installed.
+    # img4 is then not necessary and can be commented away.
+  # img2:
+  #   build:
+  #     context: .
+  #     target: img2
 
   img4:
     build:
