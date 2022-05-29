@@ -1,8 +1,23 @@
-version: "3"
+version: '3.4'
 services:
+  img1:
+    build:
+      context: .
+      target: img1
+
+  img2:
+    build:
+      context: .
+      target: img2
+
+  img4:
+    build:
+      context: .
+      target: img4
+
   mailhog:
-      image: mailhog/mailhog:latest
-      restart: always
-      ports:
-        - 1025:1025
-        - 8025:8025
+    image: mailhog/mailhog:latest
+    restart: always
+    ports:
+      - 1025:1025
+      - 8025:8025    
