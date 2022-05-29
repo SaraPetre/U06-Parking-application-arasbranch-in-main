@@ -423,6 +423,7 @@ def stop_parking():
                         price_db_query = "UPDATE parked_cars SET price=? where parked_car=?"
                         data_price_db = (price_db, regnum,)
                         cursor.execute(price_db_query, data_price_db)
+
                     # Labels for the variables above
                     def labels_varibles():
                         car_reg_label = Label(stop_pop_up, text=car_reg, bg='#F5F5F5', font=("Verdana", 11))
