@@ -1,0 +1,26 @@
+Kursöversikt
+
+DevOps, 60 yhp
+Innehåll
+I aktuell kurs kommer den studerande erhålla kunskaper och färdigheter inom DevOps-arbete i utvecklingsprocesser med fokus på följande områden och tekniker; Krav, Byggande, Test, Paketering, Lansering, Konfigurering, Övervakning samt Affärsperspektivet.
+
+I kursen ingår också att den studerande skall ha en helhetsförståelse för DevOps som roll, dess funktion och ansvar i utvecklings-, samt förvaltningsprocessen, samt på vilket sätt DevOps passar in i företagets affärssyfte och mål.
+
+Mål
+Den studerande skall efter genomförd kurs med godkänt resultat kunna:
+
+Kunskaper
+
+om Continuous Integration/Continuous Delivery
+om DevOps-rollens syfte och mål i projekt och organisationer
+om uppsättning och design av en DevOps-miljö och process för ett modernt systemutvecklingsprojekt
+om olika DevOps-lösningar i de olika större teknikstackarna såsom Azure och AWS
+Färdigheter
+
+i programvaror i syfte att standardisera byggen - i olika byggens funktioner för olika roller i moderna systemutvecklingsprojekt samt hur dessa bör vara utformade. 
+i att sätta upp olika CD/CI Pipelines för exempelvis Test, Build, Staging och Produktion
+i programvaror i syfte att övervaka och hantera spårbarhet i systemutvecklingsprocessen
+i programvaror i syfte att automatisera och orkestrera den kontinuerliga leveransen.
+inom Docker, Jenkins samt versionhanterare som Git.
+inom skriptning med bl.a Bash, Python och dess applikationer inom DevOps-flöden och CI/CD.
+i att skapa och hantera health check/probes för applikationer samt infrastrukturen
